@@ -1,0 +1,23 @@
+{
+  "name": "copilot-starter-kit",
+  "version": "1.0.0",
+  "description": "Quick-start kit for GitHub Copilot in VS Code — scaffolds ~/.agents with reusable prompts and global settings.",
+  "bin": {
+    "copilot-starter-kit": "./bin/setup.js"
+  },
+  "files": [
+    "bin/",
+    "prompts/",
+    "notes/"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["github-copilot", "vscode", "ai", "prompts", "developer-tools"],
+  "author": "rmenner",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rmenner/copilot-starter-kit.git"
+  }
+}
