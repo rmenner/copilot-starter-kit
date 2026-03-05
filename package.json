@@ -8,7 +8,9 @@
   "files": [
     "bin/",
     "prompts/",
-    "notes/"
+    "notes/",
+    "instructions/",
+    "skills/"
   ],
   "engines": {
     "node": ">=18"

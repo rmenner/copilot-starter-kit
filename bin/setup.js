@@ -72,11 +72,15 @@ function vscodeSettingsPaths() {
 
   // 5. Seed instructions folder
   console.log(green(`\n▶ Seeding instructions folder at ${agentsDir}/instructions/...`));
-  copyDir(path.join(PKG_DIR, "instructions"), path.join(agentsDir, "instructions"));
+  const instructionsSrc = path.join(PKG_DIR, "instructions");
+  if (fs.existsSync(instructionsSrc)) copyDir(instructionsSrc, path.join(agentsDir, "instructions"));
+  else console.log("  (no starter files)");
 
   // 6. Seed skills folder
   console.log(green(`\n▶ Seeding skills folder at ${agentsDir}/skills/...`));
-  copyDir(path.join(PKG_DIR, "skills"), path.join(agentsDir, "skills"));
+  const skillsSrc = path.join(PKG_DIR, "skills");
+  if (fs.existsSync(skillsSrc)) copyDir(skillsSrc, path.join(agentsDir, "skills"));
+  else console.log("  (no starter files)");
 
   // 7. VS Code settings
   const promptsDir      = path.join(agentsDir, "prompts");
