@@ -1,4 +1,4 @@
-# VS Code AI — Categorized Bullet List Cheat Sheet
+# VS Code AI — Cheat Sheet
 
 ---
 
