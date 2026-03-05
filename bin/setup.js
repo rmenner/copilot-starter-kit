@@ -17,6 +17,7 @@ const yellow = (s) => `\x1b[33m${s}\x1b[0m`;
 function copyDir(src, dest) {
   fs.mkdirSync(dest, { recursive: true });
   for (const file of fs.readdirSync(src)) {
+    if (file === ".gitkeep") continue;
     const srcFile  = path.join(src, file);
     const destFile = path.join(dest, file);
     if (fs.statSync(srcFile).isFile()) {
@@ -69,11 +70,21 @@ function vscodeSettingsPaths() {
   console.log(green(`\n▶ Copying cheat sheet to ${agentsDir}/notes/...`));
   copyDir(path.join(PKG_DIR, "notes"), path.join(agentsDir, "notes"));
 
-  // 5. VS Code settings
-  const promptsDir = path.join(agentsDir, "prompts");
+  // 5. Seed instructions folder
+  console.log(green(`\n▶ Seeding instructions folder at ${agentsDir}/instructions/...`));
+  copyDir(path.join(PKG_DIR, "instructions"), path.join(agentsDir, "instructions"));
+
+  // 6. Seed skills folder
+  console.log(green(`\n▶ Seeding skills folder at ${agentsDir}/skills/...`));
+  copyDir(path.join(PKG_DIR, "skills"), path.join(agentsDir, "skills"));
+
+  // 7. VS Code settings
+  const promptsDir      = path.join(agentsDir, "prompts");
+  const instructionsDir = path.join(agentsDir, "instructions");
+  const skillsDir       = path.join(agentsDir, "skills");
   console.log(yellow("\n▶ VS Code settings"));
-  console.log(`  The setting 'chat.promptFiles.locations' needs to point to:`);
-  console.log(`  ${promptsDir}\n`);
+  console.log(`  The following settings tell Copilot where to find your global prompts,`);
+  console.log(`  instructions, and skills under: ${agentsDir}\n`);
 
   const updateAnswer = await ask("  Auto-update VS Code settings.json? (y/n): ");
 
@@ -85,14 +96,23 @@ function vscodeSettingsPaths() {
     } else {
       const raw      = fs.readFileSync(settingsFile, "utf8").trim();
       const settings = raw ? JSON.parse(raw) : {};
-      if (!settings["chat.promptFiles.locations"]) settings["chat.promptFiles.locations"] = {};
-      settings["chat.promptFiles.locations"][promptsDir] = true;
+
+      if (!settings["chat.promptFilesLocations"]) settings["chat.promptFilesLocations"] = {};
+      settings["chat.promptFilesLocations"][promptsDir] = true;
+
+      if (!settings["chat.instructionsFilesLocations"]) settings["chat.instructionsFilesLocations"] = {};
+      settings["chat.instructionsFilesLocations"][instructionsDir] = true;
+
+      if (!settings["chat.agentSkillsLocations"]) settings["chat.agentSkillsLocations"] = {};
+
       fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2) + "\n", "utf8");
       console.log(green(`\n  ✅ Updated: ${settingsFile}`));
     }
   } else {
     console.log(yellow("\n  Add the following to your VS Code settings.json:"));
-    console.log(`\n  "chat.promptFiles.locations": {\n    "${promptsDir}": true\n  }`);
+    console.log(`\n  "chat.promptFilesLocations": {\n    "${promptsDir}": true\n  },`);
+    console.log(`  "chat.instructionsFilesLocations": {\n    "${instructionsDir}": true\n  },`);
+    console.log(`  "chat.agentSkillsLocations": {\n    "${skillsDir}": true\n  }`);
     console.log('\n  Open: ⌘⇧P (macOS) / Ctrl+Shift+P (Win/Linux) → "Open User Settings (JSON)"');
   }
 

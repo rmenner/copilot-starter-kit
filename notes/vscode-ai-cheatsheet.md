@@ -70,7 +70,7 @@
 - Markdown files with YAML front matter
 - Invoke by name to run standardized tasks
 - Good for scaffolding, audits, migration guides
-- **Global prompts** — set `chat.promptFiles.locations` in User Settings to `~/.agents/prompts/` to make prompts available across all workspaces
+- **Global prompts** — set `chat.promptFilesLocations`, `chat.instructionsFilesLocations`, and `chat.agentSkillsLocations` in User Settings to register your `~/.agents/` subfolders across all workspaces
 - **Repo prompts** live in `.github/prompts/` (team-shared); **global prompts** live in `~/.agents/prompts/` (personal, all workspaces)
 
 ---

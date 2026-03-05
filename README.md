@@ -56,7 +56,7 @@ The script will:
 2. Create `~/<folder>/{instructions,prompts,skills,notes}`
 3. Copy the starter prompts into `~/<folder>/prompts/`
 4. Copy the cheat sheet into `~/<folder>/notes/`
-5. Offer to auto-update your VS Code `settings.json` to register the prompts folder as a global prompt source, or print the snippet for you to paste in manually
+5. Offer to auto-update your VS Code `settings.json` to register your prompts, instructions, and skills folders (`chat.promptFilesLocations`, `chat.instructionsFilesLocations`, `chat.agentSkillsLocations`), or print the snippet for you to paste in manually
 
 ---
 
@@ -87,11 +87,17 @@ To add your own global prompt, drop any `.prompt.md` file into `~/.agents/prompt
 
 ## VS Code settings reference
 
-The key setting that makes global prompts work:
+Add these to your `settings.json` to register your global prompts, instructions, and skills:
 
 ```json
-"chat.promptFiles.locations": {
+"chat.promptFilesLocations": {
   "~/.agents/prompts": true
+},
+"chat.instructionsFilesLocations": {
+  "~/.agents/instructions": true
+},
+"chat.agentSkillsLocations": {
+  "~/.agents/skills": true
 }
 ```
 

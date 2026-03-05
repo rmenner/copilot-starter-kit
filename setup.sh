@@ -33,11 +33,19 @@ cp -v "$SCRIPT_DIR"/prompts/*.prompt.md "$AGENTS_DIR/prompts/"
 echo -e "${GREEN}▶ Copying cheat sheet to $AGENTS_DIR/notes/...${RESET}"
 cp -v "$SCRIPT_DIR"/notes/vscode-ai-cheatsheet.md "$AGENTS_DIR/notes/"
 
-# ─── 4. VS Code settings ──────────────────────────────────────────────────────
+# ─── 4. Seed instructions folder ─────────────────────────────────────────────
+echo -e "${GREEN}▶ Seeding instructions folder at $AGENTS_DIR/instructions/...${RESET}"
+find "$SCRIPT_DIR/instructions" -maxdepth 1 -type f -not -name '.gitkeep' -exec cp -v {} "$AGENTS_DIR/instructions/" \;
+
+# ─── 5. Seed skills folder ────────────────────────────────────────────────────
+echo -e "${GREEN}▶ Seeding skills folder at $AGENTS_DIR/skills/...${RESET}"
+find "$SCRIPT_DIR/skills" -maxdepth 1 -type f -not -name '.gitkeep' -exec cp -v {} "$AGENTS_DIR/skills/" \;
+
+# ─── 6. VS Code settings ──────────────────────────────────────────────────────
 echo ""
 echo -e "${YELLOW}▶ VS Code settings${RESET}"
-echo "  The setting ${CYAN}chat.promptFiles.locations${RESET} tells Copilot where to find your"
-echo "  global prompts. It needs to point to: ${CYAN}$AGENTS_DIR/prompts${RESET}"
+echo "  The following settings tell Copilot where to find your global prompts,"
+echo "  instructions, and skills under: ${CYAN}$AGENTS_DIR${RESET}"
 echo ""
 read -rp "  Auto-update VS Code settings.json? (y/n): " UPDATE_SETTINGS
 
@@ -62,21 +70,30 @@ if [[ "$UPDATE_SETTINGS" =~ ^[Yy]$ ]]; then
     echo "  ⚠️  Could not find VS Code settings.json. Falling back to manual instructions."
   else
     # Use python3 to safely merge the setting without overwriting existing config
-    python3 - "$SETTINGS_FILE" "$AGENTS_DIR/prompts" <<'EOF'
+    python3 - "$SETTINGS_FILE" "$AGENTS_DIR/prompts" "$AGENTS_DIR/instructions" "$AGENTS_DIR/skills" <<'EOF'
 import sys, json, os
 
-settings_path = sys.argv[1]
-prompts_path = sys.argv[2]
+settings_path   = sys.argv[1]
+prompts_path    = sys.argv[2]
+instructions_path = sys.argv[3]
+skills_path     = sys.argv[4]
 
 # Read existing settings (handle empty file)
 with open(settings_path, "r") as f:
   content = f.read().strip()
 settings = json.loads(content) if content else {}
 
-# Merge setting
-locations = settings.get("chat.promptFiles.locations", {})
+# Merge settings
+locations = settings.get("chat.promptFilesLocations", {})
 locations[prompts_path] = True
-settings["chat.promptFiles.locations"] = locations
+settings["chat.promptFilesLocations"] = locations
+
+inst_locations = settings.get("chat.instructionsFilesLocations", {})
+inst_locations[instructions_path] = True
+settings["chat.instructionsFilesLocations"] = inst_locations
+
+if "chat.agentSkillsLocations" not in settings:
+  settings["chat.agentSkillsLocations"] = {}
 
 # Write back with 2-space indent
 with open(settings_path, "w") as f:
@@ -91,8 +108,14 @@ else
   echo ""
   echo -e "  ${YELLOW}Add the following to your VS Code settings.json:${RESET}"
   echo ""
-  echo '  "chat.promptFiles.locations": {'
+  echo '  "chat.promptFilesLocations": {'
   echo "    \"$AGENTS_DIR/prompts\": true"
+  echo '  },'
+  echo '  "chat.instructionsFilesLocations": {'
+  echo "    \"$AGENTS_DIR/instructions\": true"
+  echo '  },'
+  echo '  "chat.agentSkillsLocations": {'
+  echo "    \"$AGENTS_DIR/skills\": true"
   echo '  }'
   echo ""
   echo "  Open settings: Code → Settings → Open Settings (JSON)  or  ⌘⇧P → 'Open User Settings JSON'"

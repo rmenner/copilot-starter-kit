@@ -35,11 +35,25 @@ $cheatSheet = Join-Path $ScriptDir "notes" "vscode-ai-cheatsheet.md"
 Copy-Item $cheatSheet -Destination (Join-Path $AgentsDir "notes" "vscode-ai-cheatsheet.md") -Force
 Write-Host "  Copied: vscode-ai-cheatsheet.md"
 
-# ─── 4. VS Code settings ──────────────────────────────────────────────────────
+# ─── 4. Seed instructions folder ─────────────────────────────────────────────
+Write-Host "▶ Seeding instructions folder at $AgentsDir/instructions/..." -ForegroundColor Green
+Get-ChildItem -Path (Join-Path $ScriptDir "instructions") -File | Where-Object { $_.Name -ne ".gitkeep" } | ForEach-Object {
+  Copy-Item $_.FullName -Destination (Join-Path $AgentsDir "instructions" $_.Name) -Force
+  Write-Host "  Copied: $($_.Name)"
+}
+
+# ─── 5. Seed skills folder ────────────────────────────────────────────────────
+Write-Host "▶ Seeding skills folder at $AgentsDir/skills/..." -ForegroundColor Green
+Get-ChildItem -Path (Join-Path $ScriptDir "skills") -File | Where-Object { $_.Name -ne ".gitkeep" } | ForEach-Object {
+  Copy-Item $_.FullName -Destination (Join-Path $AgentsDir "skills" $_.Name) -Force
+  Write-Host "  Copied: $($_.Name)"
+}
+
+# ─── 6. VS Code settings ──────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "▶ VS Code settings" -ForegroundColor Yellow
-Write-Host "  The setting 'chat.promptFiles.locations' tells Copilot where to find your"
-Write-Host "  global prompts. It needs to point to: $AgentsDir\prompts"
+Write-Host "  The following settings tell Copilot where to find your global prompts,"
+Write-Host "  instructions, and skills under: $AgentsDir"
 Write-Host ""
 $UpdateSettings = Read-Host "  Auto-update VS Code settings.json? (y/n)"
 
@@ -65,11 +79,19 @@ if ($UpdateSettings -match "^[Yy]$") {
     $content = Get-Content $SettingsFile -Raw
     $settings = if ($content.Trim()) { $content | ConvertFrom-Json -AsHashtable } else { @{} }
 
-    if (-not $settings.ContainsKey("chat.promptFiles.locations")) {
-      $settings["chat.promptFiles.locations"] = @{}
+    if (-not $settings.ContainsKey("chat.promptFilesLocations")) {
+      $settings["chat.promptFilesLocations"] = @{}
     }
-    $promptsPath = Join-Path $AgentsDir "prompts"
-    $settings["chat.promptFiles.locations"][$promptsPath] = $true
+    $settings["chat.promptFilesLocations"][(Join-Path $AgentsDir "prompts")] = $true
+
+    if (-not $settings.ContainsKey("chat.instructionsFilesLocations")) {
+      $settings["chat.instructionsFilesLocations"] = @{}
+    }
+    $settings["chat.instructionsFilesLocations"][(Join-Path $AgentsDir "instructions")] = $true
+
+    if (-not $settings.ContainsKey("chat.agentSkillsLocations")) {
+      $settings["chat.agentSkillsLocations"] = @{}
+    }
 
     $settings | ConvertTo-Json -Depth 10 | Set-Content $SettingsFile -Encoding UTF8
     Write-Host "  ✅ Updated: $SettingsFile" -ForegroundColor Green
@@ -78,8 +100,14 @@ if ($UpdateSettings -match "^[Yy]$") {
   Write-Host ""
   Write-Host "  Add the following to your VS Code settings.json:" -ForegroundColor Yellow
   Write-Host ""
-  Write-Host '  "chat.promptFiles.locations": {'
+  Write-Host '  "chat.promptFilesLocations": {'
   Write-Host "    `"$(Join-Path $AgentsDir 'prompts')`": true"
+  Write-Host '  },'
+  Write-Host '  "chat.instructionsFilesLocations": {'
+  Write-Host "    `"$(Join-Path $AgentsDir 'instructions')`": true"
+  Write-Host '  },'
+  Write-Host '  "chat.agentSkillsLocations": {'
+  Write-Host "    `"$(Join-Path $AgentsDir 'skills')`": true"
   Write-Host '  }'
   Write-Host ""
   Write-Host "  Open settings: Code → Settings → Open Settings (JSON)  or  Ctrl+Shift+P → 'Open User Settings JSON'"
